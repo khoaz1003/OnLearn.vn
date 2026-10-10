@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnLearn.vn</title>
+        <link rel="icon" type="image/png" href="logon.png">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ocean: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                            950: '#082f49',
+                        },
+                        emeraldTheme: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(14, 165, 233, 0.3);
+            border-radius: 9999px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: rgba(56, 189, 248, 0.3);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(14, 165, 233, 0.6);
+        }
+
+        /* Glassmorphism Styles */
+        .glass-panel {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+        
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .light .glass-card, html:not(.dark) .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Ambient Background Orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+            transition: all 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#070c14] dark:text-slate-100 min-h-screen flex transition-colors duration-300 relative selection:bg-sky-500 selection:text-white">
+
+    <!-- Ambient Glowing Background Orbs -->
+    <div class="bg-orb w-96 h-96 -top-20 -left-20 bg-sky-500/20 dark:bg-sky-600/20"></div>
+    <div class="bg-orb w-96 h-96 bottom-10 right-10 bg-emerald-500/15 dark:bg-blue-600/20"></div>
+    <div class="bg-orb w-80 h-80 top-1/2 left-1/3 bg-indigo-500/10 dark:bg-indigo-600/15"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-white/90 dark:bg-[#0d1527]/90 border-r border-slate-200 dark:border-sky-900/30 glass-panel flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0">
+        
+        <div class="flex flex-col h-full">
+            <!-- Brand Logo Header -->
+            <div class="p-5 border-b border-slate-200/80 dark:border-sky-900/30 flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-500 via-blue-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-sky-500/30">
+                        <i class="fa-solid fa-book-open-reader text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-black bg-gradient-to-r from-sky-500 via-blue-500 to-emerald-400 bg-clip-text text-transparent tracking-tight">OnLearn</span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider block text-sky-600 dark:text-sky-400 -mt-1">Thư Viện Lớp Học</span>
+                    </div>
+                </div>
+                <!-- Close Sidebar on Mobile -->
+                <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Navigation Links & Subject Filters -->
+            <div class="p-4 space-y-6 overflow-y-auto flex-grow">
+                
+                <!-- Main Nav Tabs -->
+                <div>
+                    <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Menu chính</p>
+                    <nav class="space-y-1">
+                        <button id="navBooks" onclick="switchMainTab('books')" 
+                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sky-500 text-white shadow-md shadow-sky-500/20">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-books text-base"></i> Kho Sách PDF
+                            </span>
+                            <span id="navBookBadge" class="px-2 py-0.5 text-xs rounded-full bg-white/20 text-white font-bold">0</span>
+                        </button>
+
+                        <button id="navFavs" onclick="switchMainTab('favs')" 
+                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-bookmark text-amber-500 text-base"></i> Sách Yêu Thích
+                            </span>
+                            <span id="navFavBadge" class="px-2 py-0.5 text-xs rounded-full bg-amber-500/10 text-amber-500 font-bold">0</span>
+                        </button>
+
+                        <button id="navSchedule" onclick="switchMainTab('schedule')" 
+                                class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60">
+                            <span class="flex items-center gap-3">
+                                <i class="fa-solid fa-calendar-days text-emerald-500 text-base"></i> Thời Khóa Biểu
+                            </span>
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Subject Category Filters -->
+                <div id="subjectFilterContainer">
+                    <p class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">Lọc Môn Học</p>
+                    <div id="sidebarSubjects" class="space-y-1">
+                        <!-- Dynamically populated via JS -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Quick Access & Controls -->
+            <div class="p-4 border-t border-slate-200/80 dark:border-sky-900/30 space-y-2.5">
+                <a href="https://lms.mschool.edu.vn/" target="_blank" rel="noopener noreferrer" 
+                   class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 shadow-md shadow-sky-500/20 active:scale-95 transition-all">
+                    <span class="flex items-center gap-2">
+                        <i class="fa-solid fa-graduation-cap text-base"></i> Vào mLearning (LMS)
+                    </span>
+                    <i class="fa-solid fa-arrow-up-right-from-square text-xs opacity-80"></i>
+                </a>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleDarkMode()" 
+                            class="w-full py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center gap-2 text-xs font-semibold">
+                        <i class="fa-solid fa-moon dark:hidden text-indigo-500"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                        <span id="themeBtnText">Giao diện</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebarOverlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden lg:hidden"></div>
+
+    <!-- Main Content Container -->
+    <div class="flex-grow lg:ml-72 flex flex-col min-h-screen relative z-10">
+        
+        <!-- Top Sticky Header -->
+        <header class="sticky top-0 z-20 w-full bg-white/80 dark:bg-[#070c14]/80 glass-panel border-b border-slate-200/80 dark:border-sky-900/30 px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-3">
+                <button onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+                    <i class="fa-solid fa-bars text-lg"></i>
+                </button>
+                
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <span id="pageMainTitle">Kho Sách Giáo Khoa PDF</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-500/20 hidden sm:inline-flex items-center gap-1">
+                            <i class="fa-solid fa-hard-drive text-[10px]"></i> khoaz1003
+                        </span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- Grade Selector -->
+            <div class="flex items-center gap-2">
+                <label for="gradeSelect" class="hidden sm:inline text-xs font-semibold text-slate-500 dark:text-slate-400">Khối lớp:</label>
+                <select id="gradeSelect" onchange="handleGradeChange()" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-xs font-semibold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                    <option value="ALL">Tất cả khối (6-9)</option>
+                    <option value="6">Khối 6</option>
+                    <option value="7">Khối 7</option>
+                    <option value="8" selected>Khối 8</option>
+                    <option value="9">Khối 9</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Main Body Area -->
+        <main class="p-4 sm:p-8 flex-grow">
+            
+            <!-- Hero Search Banner (Only for Books Tab) -->
+            <section id="heroBanner" class="mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-600 dark:from-sky-950/80 dark:via-blue-950/80 dark:to-emerald-950/80 border border-white/20 dark:border-sky-500/20 shadow-xl text-white relative overflow-hidden">
+                <div class="max-w-2xl relative z-10 space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold border border-white/30">
+                        <i class="fa-solid fa-circle-check text-emerald-300"></i>
+                        <span>Đang hoạt động</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight">
+                        Tra Cứu Nhanh Tài Liệu & Sách Giáo Khoa
+                    </h2>
+                    <p class="text-xs sm:text-sm text-white/80 leading-relaxed">
+                        Dễ dàng xem sách, học tập nhẹ tay.
+                    </p>
+
+                    <!-- Search Input Box -->
+                    <div class="pt-2">
+                        <div class="relative flex items-center bg-white/95 dark:bg-slate-900/90 rounded-2xl shadow-lg border border-white/40 dark:border-sky-500/30 overflow-hidden focus-within:ring-2 focus-within:ring-sky-400 transition-all">
+                            <div class="pl-4 text-slate-400">
+                                <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                            </div>
+                            <input type="text" id="searchInput" oninput="handleSearch()" 
+                                   placeholder="Nhập tên môn, tiêu đề sách (VD: Toán 8, Ngữ Văn, Tiếng Anh)..." 
+                                   class="w-full py-3.5 px-3 bg-transparent text-slate-800 dark:text-white text-sm placeholder-slate-400 focus:outline-none">
+                            <button id="clearSearchBtn" onclick="clearSearch()" class="hidden pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 1: Books Grid Content -->
+            <section id="booksSection">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 id="sectionTitle" class="font-bold text-lg text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-book-bookmark text-sky-500"></i> Danh Sách Sách SGK & Tài Liệu
+                    </h3>
+                    <span id="activeFilterBadge" class="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                        Đang hiện tất cả môn
+                    </span>
+                </div>
+
+                <!-- Empty State -->
+                <div id="noResultsState" class="hidden text-center py-16 px-4 glass-card rounded-2xl">
+                    <div class="w-16 h-16 bg-sky-500/10 text-sky-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-folder-open text-2xl"></i>
+                    </div>
+                    <h4 class="text-base font-bold text-slate-800 dark:text-slate-200">Không tìm thấy tài liệu phù hợp</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Hãy thử tìm với từ khóa khác hoặc bỏ lọc môn học.</p>
+                    <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-xs font-semibold rounded-xl shadow-md shadow-sky-500/20 transition-all">
+                        Đặt lại bộ lọc
+                    </button>
+                </div>
+
+                <!-- Books Card Grid -->
+                <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!-- Cards will be dynamically injected here via JS -->
+                </div>
+            </section>
+
+            <!-- SECTION 2: Schedule & Timetable -->
+            <section id="scheduleSection" class="hidden space-y-8">
+
+                <!-- 1. THỜI GIAN BIỂU CHUNG TRƯỜNG THCS NGUYỄN HỮU THỌ -->
+                <div class="glass-card rounded-3xl p-6 sm:p-8 space-y-6 border border-sky-500/20 shadow-2xl">
+                    <div class="text-center space-y-1">
+                        <p class="text-xs sm:text-sm font-black uppercase tracking-widest text-red-500 dark:text-rose-400">TRƯỜNG THCS NGUYỄN HỮU THỌ</p>
+                        <h3 class="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase bg-gradient-to-r from-red-500 via-rose-500 to-amber-500 bg-clip-text text-transparent">
+                            THỜI GIAN BIỂU NĂM HỌC 2026 - 2027
+                        </h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- BUỔI SÁNG -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded-2xl bg-sky-600 text-white font-bold text-xs shadow-md">
+                                <span class="uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-sun"></i> BUỔI SÁNG</span>
+                                <span class="text-[10px] font-medium bg-black/20 px-2 py-0.5 rounded-lg">07H15 ĐÁNH 01 HỒI TRỐNG TẬP TRUNG DƯỚI SÂN</span>
+                            </div>
+
+                            <div class="space-y-2 text-xs font-semibold">
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 1</span>
+                                    <span class="font-mono text-sky-500 font-bold">07H30 - 08H15</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 2</span>
+                                    <span class="font-mono text-sky-500 font-bold">08H20 - 09H05</span>
+                                </div>
+
+                                <div class="p-2.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-300 text-center space-y-1">
+                                    <p class="text-[10px] uppercase font-bold text-sky-500">09H05 ĐÁNH 01 HỒI TRỐNG RA CHƠI</p>
+                                    <p class="font-black text-sm uppercase">RA CHƠI 25 PHÚT</p>
+                                    <p class="text-[10px] uppercase font-bold text-sky-500">09H30 ĐÁNH 01 HỒI TRỐNG KẾT THÚC RA CHƠI</p>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 3</span>
+                                    <span class="font-mono text-sky-500 font-bold">09H35 - 10H20</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 4</span>
+                                    <span class="font-mono text-sky-500 font-bold">10H25 - 11H10</span>
+                                </div>
+
+                                <div class="p-2 rounded-xl bg-slate-200/60 dark:bg-slate-800 text-[11px] font-bold text-slate-500 text-center">
+                                    11H10 ĐÁNH 01 HỒI TRỐNG ĂN TRƯA VÀ NGHĨ TRƯA
+                                </div>
+
+                                <div class="p-3 rounded-2xl bg-orange-500/15 border border-orange-500/30 text-orange-600 dark:text-orange-400 text-xs space-y-1">
+                                    <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-utensils"></i> Học sinh:</p>
+                                    <ul class="list-disc list-inside space-y-0.5 text-[11px] pl-1 font-medium">
+                                        <li>Ăn trưa từ 11h15 đến 11h45</li>
+                                        <li>Nghỉ trưa từ 11h50 đến 13h05</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BUỔI CHIỀU -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded-2xl bg-emerald-600 text-white font-bold text-xs shadow-md">
+                                <span class="uppercase tracking-wider flex items-center gap-1.5"><i class="fa-solid fa-moon"></i> BUỔI CHIỀU</span>
+                                <span class="text-[10px] font-medium bg-black/20 px-2 py-0.5 rounded-lg">13H05 NHẮN 2 HỒI CHUÔNG &bull; 13H15 ĐÁNH 1 HỒI TRỐNG</span>
+                            </div>
+
+                            <div class="space-y-2 text-xs font-semibold">
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 1</span>
+                                    <span class="font-mono text-emerald-500 font-bold">13H20 - 14H05</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 2</span>
+                                    <span class="font-mono text-emerald-500 font-bold">14H10 - 14H55</span>
+                                </div>
+
+                                <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-300 text-center space-y-1">
+                                    <p class="text-[10px] uppercase font-bold text-emerald-500">14H55 ĐÁNH 01 HỒI TRỐNG RA CHƠI</p>
+                                    <p class="font-black text-sm uppercase">RA CHƠI 25 PHÚT</p>
+                                    <p class="text-[10px] uppercase font-bold text-emerald-500">15H20 ĐÁNH 01 HỒI TRỐNG KẾT THÚC RA CHƠI</p>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 3</span>
+                                    <span class="font-mono text-emerald-500 font-bold">15H25 - 16H10</span>
+                                </div>
+                                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+                                    <span>TIẾT 4</span>
+                                    <span class="font-mono text-emerald-500 font-bold">16H15 - 17H00</span>
+                                </div>
+
+                                <div class="p-2 rounded-xl bg-slate-200/60 dark:bg-slate-800 text-[11px] font-bold text-slate-500 text-center">
+                                    17H00 ĐÁNH 01 HỒI TRỐNG KẾT THÚC - HỌC SINH RA VỀ
+                                </div>
+
+                                <div class="p-3 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 text-xs space-y-1">
+                                    <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> HS Lưu ý:</p>
+                                    <p class="text-[11px] leading-relaxed font-medium">
+                                        Sau <strong>07h15</strong> cổng số 2 và 3 sẽ đóng cửa, các em học sinh đi trễ phải đi vào cổng số 1 (cổng chính). Liên hệ phòng Quản sinh để nhận giấy vào lớp.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GHI CHÚ BẮT BUỘC -->
+                    <div class="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 font-extrabold text-xs sm:text-sm text-center flex items-center justify-center gap-2 shadow-sm">
+                        <i class="fa-solid fa-circle-exclamation text-base"></i>
+                        <span>Lưu ý: Thứ 2 tập trung lúc 7h10</span>
+                    </div>
+                </div>
+
+                <!-- 2. THỜI KHÓA BIỂU ĐỘNG TỪNG LỚP -->
+                <div class="space-y-6 pt-4">
+                    <div class="glass-card rounded-2xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-l-sky-500">
+                        <div>
+                            <h3 id="scheduleTitle" class="font-black text-xl text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-week text-sky-500"></i> THỜI KHÓA BIỂU LỚP 8TC1
+                            </h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                                Năm học 2026-2027 &bull; Áp dụng chính thức từ ngày <strong class="text-sky-500">05/09/2026</strong>
+                            </p>
+                        </div>
+                        
+                        <!-- Lọc Khối & Chọn Lớp -->
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="flex items-center gap-2">
+                                <label for="scheduleGradeSelect" class="text-xs font-bold text-slate-500 dark:text-slate-400">Khối:</label>
+                                <select id="scheduleGradeSelect" onchange="handleScheduleGradeChange()" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                    <option value="6">Khối 6</option>
+                                    <option value="7">Khối 7</option>
+                                    <option value="8" selected>Khối 8</option>
+                                    <option value="9">Khối 9</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <label for="classSelect" class="text-xs font-bold text-slate-500 dark:text-slate-400">Lớp:</label>
+                                <select id="classSelect" onchange="handleClassChange()" class="bg-sky-500 text-white text-xs font-bold rounded-xl px-3.5 py-2 focus:outline-none focus:ring-2 focus:ring-sky-400 shadow-md shadow-sky-500/20">
+                                    <!-- Dynamic Options -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTAINER BẢNG TKB -->
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="scheduleTablesContainer">
+                        <!-- Rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto border-t border-slate-200/80 dark:border-sky-900/30 py-6 px-8 text-xs text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-[#070c14]/50 glass-panel">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="font-bold text-slate-800 dark:text-slate-200">OnLearn System</span> &copy;2026 by khoaz1003
+                </div>
+                <div class="flex items-center gap-4 text-xs font-medium">
+                    <a href="https://lms.mschool.edu.vn/" target="_blank" class="hover:text-sky-500 transition-colors">lms.mschool.edu.vn</a>
+                    <span>&bull;</span>
+                    <span class="text-sky-500">Normal Mode</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal: Local PDF Viewer Reader -->
+    <div id="pdfModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-6xl h-[92vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-sky-800/40">
+            <div class="px-4 py-3 bg-slate-100 dark:bg-slate-800/90 border-b border-slate-200 dark:border-slate-700/80 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <span id="modalSubjectBadge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-sky-500 text-white shrink-0">Toán</span>
+                    <h3 id="modalPdfTitle" class="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 truncate">
+                        Đang mở PDF...
+                    </h3>
+                </div>
+
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <div class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+                        <i class="fa-solid fa-shield-halved text-emerald-500"></i>
+                        <span>PDF Viewer</span>
+                    </div>
+
+                    <a id="modalDownloadBtn" href="#" target="_blank" download 
+                       class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-sky-500 hover:bg-sky-600 text-white transition-all flex items-center gap-1.5 shadow-md shadow-sky-500/20">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        <span class="hidden sm:inline">Mở file trong tab mới</span>
+                    </a>
+
+                    <button onclick="closeModal('pdfModal')" class="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white text-xl transition-all rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="pdfViewerContainer" class="flex-grow bg-slate-800 relative overflow-hidden flex items-center justify-center">
+                <iframe id="pdfIframe" class="w-full h-full border-0 relative z-20" src=""></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DANH SÁCH SÁCH MẶC ĐỊNH
+        const INITIAL_LOCAL_BOOKS = [
+            // LỚP 8
+            { id: 'b1', title: 'SGK Toán 8 - Tập 1', subject: 'Toán', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Đa thức, hằng đẳng thức, phân thức hữu tỉ và tính chất tứ giác trong hình học phẳng.', pdfUrl: './pdf/k8/toan8-tap1.pdf', picUrl: './pics/k8/toan8-tap1.jpg', icon: 'fa-square-root-variable', gradient: 'from-sky-500 to-blue-600' },
+            { id: 'b2', title: 'SGK Toán 8 - Tập 2', subject: 'Toán', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Phương trình, bất phương trình bậc nhất một ẩn, tam giác đồng dạng và hình khối không gian.', pdfUrl: './pdf/k8/toan8-tap2.pdf', picUrl: './pics/k8/toan8-tap2.jpg', icon: 'fa-square-root-variable', gradient: 'from-sky-500 to-blue-600' },
+            { id: 'b3', title: 'Tiếng Anh 8 Global Success', subject: 'Tiếng Anh', grade: '8', series: 'Global Success', desc: 'Phát triển từ vựng, ngữ pháp và 4 kỹ năng Nghe - Nói - Đọc - Viết theo chủ điểm giao tiếp.', pdfUrl: './pdf/k8/eng8.pdf', picUrl: './pics/k8/eng8.jpg', icon: 'fa-language', gradient: 'from-amber-500 to-orange-600' },
+            { id: 'b4', title: 'SGK Ngữ Văn 8 - Tập 1', subject: 'Ngữ Văn', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Khám phá văn học dân gian, truyện ngắn, thơ trữ tình và bài học nhân cách qua các chủ điểm.', pdfUrl: './pdf/k8/van8-tap1.pdf', picUrl: './pics/k8/van8-tap1.jpg', icon: 'fa-book', gradient: 'from-rose-500 to-pink-600' },
+            { id: 'b5', title: 'SGK Ngữ Văn 8 - Tập 2', subject: 'Ngữ Văn', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Thơ Đường luật, văn bản nghị luận, kịch bản văn học và kỹ năng viết bài văn luận điểm.', pdfUrl: './pdf/k8/van8-tap2.pdf', picUrl: './pics/k8/van8-tap2.jpg', icon: 'fa-book', gradient: 'from-rose-500 to-pink-600' },
+            { id: 'b6', title: 'SGK Khoa Học Tự Nhiên 8', subject: 'Khoa Học Tự Nhiên', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Tìm hiểu phản ứng hóa học, hợp chất vô cơ, áp suất, điện học, cơ thể người và hệ sinh thái.', pdfUrl: './pdf/k8/sgkkhtn8.pdf', picUrl: './pics/k8/sgkkhtn8.jpg', icon: 'fa-flask-vial', gradient: 'from-emerald-500 to-teal-600' },
+            { id: 'b7', title: 'SGK Giáo Dục Công Dân 8', subject: 'Giáo Dục Công Dân', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Rèn luyện đạo đức, lòng tự hào dân tộc, kỹ năng quản lý tài chính và hiểu biết pháp luật cơ bản.', pdfUrl: './pdf/k8/gdcd8.pdf', picUrl: './pics/k8/gdcd8.jpg', icon: 'fa-scale-balanced', gradient: 'from-red-500 to-rose-600' },
+            { id: 'b8', title: 'SGK Lịch Sử và Địa Lý 8', subject: 'Lịch Sử và Địa Lý', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Lịch sử thế giới & Việt Nam cận đại kết hợp đặc điểm tự nhiên, địa hình và dân cư Việt Nam.', pdfUrl: './pdf/k8/lsdl8.pdf', picUrl: './pics/k8/lsdl8.jpg', icon: 'fa-earth-americas', gradient: 'from-amber-700 to-yellow-600' },
+            { id: 'b9', title: 'SGK Tin Học 8', subject: 'Tin Học', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Lịch sử máy tính, sử dụng phần mềm bảng tính, tạo trình chiếu và tư duy lập trình cơ bản.', pdfUrl: './pdf/k8/tin8.pdf', picUrl: './pics/k8/tin8.jpg', icon: 'fa-laptop-code', gradient: 'from-violet-600 to-fuchsia-600' },
+            { id: 'b10', title: 'SGK Hoạt Động Trải Nghiệm & Hướng Nghiệp 8', subject: 'HDTN-HN', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Khám phá bản thân, chăm sóc gia đình, xây dựng cộng đồng và định hướng nghề nghiệp tương lai.', pdfUrl: './pdf/k8/hdtn8.pdf', picUrl: './pics/k8/hdtn8.jpg', icon: 'fa-compass', gradient: 'from-orange-500 via-amber-500 to-yellow-500' },
+            { id: 'b11', title: 'SGK Mỹ Thuật 8', subject: 'Mỹ Thuật', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Trải nghiệm thiết kế đồ họa, mỹ thuật ứng dụng, tạo hình nghệ thuật và thưởng thức mỹ thuật.', pdfUrl: './pdf/k8/mt8.pdf', picUrl: './pics/k8/mt8.jpg', icon: 'fa-palette', gradient: 'from-fuchsia-500 via-purple-500 to-pink-500' },
+            { id: 'b12', title: 'SGK Âm Nhạc 8', subject: 'Âm Nhạc', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Hát tập thể, lý thuyết âm nhạc, đọc nhạc, chơi nhạc cụ và cảm thụ âm nhạc đa dạng.', pdfUrl: './pdf/k8/amnhac8.pdf', picUrl: './pics/k8/amnhac8.jpg', icon: 'fa-music', gradient: 'from-cyan-500 to-blue-500' },
+            { id: 'b26', title: 'SGK Công Nghệ 8', subject: 'Công Nghệ', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Vẽ kỹ thuật cơ bản, cơ khí chế tạo, truyền chuyển động và các mạch điện điều khiển đơn giản.', pdfUrl: './pdf/k8/cn8.pdf', picUrl: './pics/k8/cn8.jpg', icon: 'fa-gears', gradient: 'from-blue-600 to-indigo-600' },
+            { id: 'b28', title: 'SGK Giáo Dục Thể Chất 8', subject: 'Giáo Dục Thể Chất', grade: '8', series: 'Kết Nối Tri Thức', desc: 'Rèn luyện thể lực qua chạy cự ly, đội hình đội ngũ, môn thể thao tự chọn và thói quen vận động.', pdfUrl: './pdf/k8/gdtc8.pdf', picUrl: './pics/k8/gdtc8.jpg', icon: 'fa-person-running', gradient: 'from-emerald-600 to-green-500' },
+            // LỚP 6
+            { id: 'b13', title: 'SGK Toán 6 - Tập 1', subject: 'Toán', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Tập hợp số tự nhiên, tính chia hết, số nguyên và các hình phẳng trong thực tiễn.', pdfUrl: './pdf/k6/toan6-tap1.pdf', picUrl: './pics/k6/toan6-tap1.jpg', icon: 'fa-square-root-variable', gradient: 'from-sky-500 to-blue-600' },
+            { id: 'b14', title: 'SGK Toán 6 - Tập 2', subject: 'Toán', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Phân số, số thập phân, yếu tố xác suất thống kê cơ bản và hình học trực quan.', pdfUrl: './pdf/k6/toan6-tap2.pdf', picUrl: './pics/k6/toan6-tap2.jpg', icon: 'fa-square-root-variable', gradient: 'from-sky-500 to-blue-600' },
+            { id: 'b15', title: 'Tiếng Anh 6 Global Success Tập 1', subject: 'Tiếng Anh', grade: '6', series: 'Global Success', desc: 'Làm quen tiếng Anh THCS qua chủ đề trường học, gia đình, bạn bè và sinh hoạt hằng ngày.', pdfUrl: './pdf/k6/eng6-tap1.pdf', picUrl: './pics/k6/eng6-tap1.png', icon: 'fa-language', gradient: 'from-amber-500 to-orange-600' },
+            { id: 'b16', title: 'Tiếng Anh 6 Global Success Tập 2', subject: 'Tiếng Anh', grade: '6', series: 'Global Success', desc: 'Mở rộng từ vựng về môi trường, thành phố, danh lam thắng cảnh và thể thao thế giới.', pdfUrl: './pdf/k6/eng6-tap2.pdf', picUrl: './pics/k6/eng6-tap2.jpg', icon: 'fa-language', gradient: 'from-amber-500 to-orange-600' },
+            { id: 'b17', title: 'SGK Ngữ Văn 6 - Tập 1', subject: 'Ngữ Văn', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Truyền thuyết, cổ tích, thơ lục bát và bài học yêu thương gia đình, quê hương.', pdfUrl: './pdf/k6/van6-tap1.pdf', picUrl: './pics/k6/van6-tap1.jpg', icon: 'fa-book', gradient: 'from-rose-500 to-pink-600' },
+            { id: 'b18', title: 'SGK Ngữ Văn 6 - Tập 2', subject: 'Ngữ Văn', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Văn bản nghị luận, văn bản thông tin, truyện đồng thoại và kỹ năng viết miêu tả, biểu cảm.', pdfUrl: './pdf/k6/van6-tap2.pdf', picUrl: './pics/k6/van6-tap2.jpg', icon: 'fa-book', gradient: 'from-rose-500 to-pink-600' },
+            { id: 'b19', title: 'SGK Khoa Học Tự Nhiên 6', subject: 'Khoa Học Tự Nhiên', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Mở đầu KHTN, chất và sự biến đổi chất, tế bào, đa dạng sinh học và các lực cơ bản.', pdfUrl: './pdf/k6/sgkkhtn6.pdf', picUrl: './pics/k6/sgkkhtn6.jpg', icon: 'fa-flask-vial', gradient: 'from-emerald-500 to-teal-600' },
+            { id: 'b20', title: 'SGK Giáo Dục Công Dân 6', subject: 'Giáo Dục Công Dân', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Hình thành thói quen tốt, tính tự lập, tôn trọng pháp luật và quyền trẻ em cơ bản.', pdfUrl: './pdf/k6/gdcd6.pdf', picUrl: './pics/k6/gdcd6.jpg', icon: 'fa-scale-balanced', gradient: 'from-red-500 to-rose-600' },
+            { id: 'b21', title: 'SGK Lịch Sử và Địa Lý 6', subject: 'Lịch Sử và Địa Lý', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Tìm hiểu xã hội nguyên thủy, lịch sử cổ đại và cấu trúc Trái Đất, khí hậu, tài nguyên thiên nhiên.', pdfUrl: './pdf/k6/lsdl6.pdf', picUrl: './pics/k6/lsdl6.jpg', icon: 'fa-earth-americas', gradient: 'from-amber-700 to-yellow-600' },
+            { id: 'b22', title: 'SGK Tin Học 6', subject: 'Tin Học', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Khái niệm thông tin, mạng Internet, văn hóa ứng xử trên mạng và biên tập văn bản.', pdfUrl: './pdf/k6/tin6.pdf', picUrl: './pics/k6/tin6.jpg', icon: 'fa-laptop-code', gradient: 'from-violet-600 to-fuchsia-600' },
+            { id: 'b23', title: 'SGK Hoạt Động Trải Nghiệm & Hướng Nghiệp 6', subject: 'HDTN-HN', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Thích ứng môi trường học mới, phát triển bản thân và thói quen sinh hoạt khoa học.', pdfUrl: './pdf/k6/hdtn6.pdf', picUrl: './pics/k6/hdtn6.jpg', icon: 'fa-compass', gradient: 'from-orange-500 via-amber-500 to-yellow-500' },
+            { id: 'b24', title: 'SGK Mỹ Thuật 6', subject: 'Mỹ Thuật', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Khám phá chấm, nét, hình, khối, màu sắc và tạo dáng sản phẩm thủ công đơn giản.', pdfUrl: './pdf/k6/mt6.pdf', picUrl: './pics/k6/mt6.jpg', icon: 'fa-palette', gradient: 'from-fuchsia-500 via-purple-500 to-pink-500' },
+            { id: 'b25', title: 'SGK Âm Nhạc 6', subject: 'Âm Nhạc', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Học hát các bài hát tuổi học trò, nhạc lý cơ bản, gõ đệm thanh phách và nghe nhạc.', pdfUrl: './pdf/k6/amnhac6.pdf', picUrl: './pics/k6/amnhac6.jpg', icon: 'fa-music', gradient: 'from-cyan-500 to-blue-500' },
+            { id: 'b27', title: 'SGK Công Nghệ 6', subject: 'Công Nghệ', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Kiến thức về nhà ở, thực phẩm & dinh dưỡng, trang phục và đồ dùng điện trong gia đình.', pdfUrl: './pdf/k6/cn6.pdf', picUrl: './pics/k6/cn6.jpg', icon: 'fa-house-chimney-user', gradient: 'from-blue-600 to-indigo-600' },
+            { id: 'b29', title: 'SGK Giáo Dục Thể Chất 6', subject: 'Giáo Dục Thể Chất', grade: '6', series: 'Kết Nối Tri Thức', desc: 'Rèn luyện tư thế cơ bản, bài tập thể dục phát triển chung và duy trì sức khỏe cá nhân.', pdfUrl: './pdf/k6/gdtc6.pdf', picUrl: './pics/k6/gdtc6.jpg', icon: 'fa-person-running', gradient: 'from-emerald-600 to-green-500' },
+        ];
+
+        const SUBJECTS = ['Tất cả', 'Toán', 'Ngữ Văn', 'Tiếng Anh', 'Giáo Dục Công Dân', 'Lịch Sử và Địa Lý', 'Khoa Học Tự Nhiên', 'Tin Học', 'HDTN-HN', 'Mỹ Thuật', 'Âm Nhạc', 'Giáo Dục Thể Chất', 'Công Nghệ'];
+
+        // DỮ LIỆU THỜI KHÓA BIỂU CẢ KHỐI 6, 7, 8, 9 (PARSED TỪ FILE EXCEL TRƯỜNG)
+        const ALL_SCHEDULES = {
+            "6I1": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Toán", "Lịch sử và Địa lý", "Tin học", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Ngữ văn", "Toán", "Lịch sử và Địa lý", "HĐTN - HN", "Khoa học tự nhiên"], "3": ["Khoa học tự nhiên", "Ngoại ngữ", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Toán", "Nghệ thuật(Âm nhạc)"], "4": ["Ngoại ngữ", "Giáo dục địa phương", "Công nghệ", "Giáo dục thể chất", "Toán", "Ngoại ngữ"], "5": ["Ngữ văn", "Nghệ thuật(Mĩ thuật)", "GDCD", "Giáo dục thể chất", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6I2": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn", "Nghệ thuật(Mĩ thuật)"], "2": ["SH HĐTN HN.", "Toán", "Ngoại ngữ", "Tin học", "Ngữ văn", "GDCD"], "3": ["Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Toán", "Nghệ thuật(Âm nhạc)", "Ngữ văn"], "4": ["Ngữ văn", "Khoa học tự nhiên", "Khoa học tự nhiên", "Toán", "Giáo dục thể chất", "Lịch sử và Địa lý"], "5": ["Ngoại ngữ", "Giáo dục địa phương", "HĐTN - HN", "Công nghệ", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6I3": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Ngữ văn", "Nghệ thuật(Âm nhạc)", "Giáo dục thể chất", "Toán"], "2": ["SH HĐTN HN.", "Ngoại ngữ", "Ngữ văn", "GDCD", "Giáo dục thể chất", "Toán"], "3": ["Ngoại ngữ", "Ngữ văn", "Công nghệ", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên"], "4": ["Toán", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Ngoại ngữ", "Tin học", "HĐTN - HN"], "5": ["Toán", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục địa phương", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6I4": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Khoa học tự nhiên", "Ngữ văn", "Khoa học tự nhiên", "Giáo dục thể chất"], "2": ["SH HĐTN HN.", "Ngữ văn", "Khoa học tự nhiên", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Giáo dục thể chất"], "3": ["Toán", "Giáo dục địa phương", "Ngoại ngữ", "Công nghệ", "Ngoại ngữ", "Tin học"], "4": ["Toán", "Nghệ thuật(Âm nhạc)", "GDCD", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn"], "5": ["Lịch sử và Địa lý", "Ngoại ngữ", "Toán", "Lịch sử và Địa lý", "HĐTN - HN", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC1": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "GDCD", "Ngoại ngữ", "Ngữ văn", "Nghệ thuật(Âm nhạc)"], "2": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Ngữ văn", "Công nghệ", "Ngữ văn", "Lịch sử và Địa lý"], "3": ["Ngoại ngữ", "Toán", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Toán"], "4": ["Khoa học tự nhiên", "Toán", "Tin học", "HĐTN - HN", "Khoa học tự nhiên", "Toán"], "5": ["Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục địa phương", "Giáo dục thể chất", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC2": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Ngữ văn", "Toán"], "2": ["SH HĐTN HN.", "Giáo dục địa phương", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Ngữ văn", "Toán"], "3": ["Lịch sử và Địa lý", "Tin học", "Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Lịch sử và Địa lý"], "4": ["Lịch sử và Địa lý", "Khoa học tự nhiên", "Toán", "GDCD", "Giáo dục thể chất", "Khoa học tự nhiên"], "5": ["Khoa học tự nhiên", "Khoa học tự nhiên", "HĐTN - HN", "Ngoại ngữ", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC3": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Toán", "Toán", "Khoa học tự nhiên", "Ngữ văn"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Toán", "Toán", "Tin học", "Ngữ văn"], "3": ["Khoa học tự nhiên", "Ngữ văn", "Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục thể chất", "Nghệ thuật(Âm nhạc)"], "4": ["Ngoại ngữ", "Ngữ văn", "Ngoại ngữ", "HĐTN - HN", "Giáo dục thể chất", "Công nghệ"], "5": ["GDCD", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Giáo dục địa phương", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC4": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Tin học", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Giáo dục địa phương"], "2": ["SH HĐTN HN.", "Ngữ văn", "Công nghệ", "Lịch sử và Địa lý", "GDCD", "Nghệ thuật(Âm nhạc)"], "3": ["Toán", "Ngoại ngữ", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Toán", "Khoa học tự nhiên"], "4": ["Toán", "HĐTN - HN", "Khoa học tự nhiên", "Ngữ văn", "Toán", "Khoa học tự nhiên"], "5": ["Giáo dục thể chất", "Giáo dục thể chất", "Ngoại ngữ", "Ngoại ngữ", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC5": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "Ngữ văn"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "GDCD", "Giáo dục thể chất", "Toán", "Ngữ văn"], "3": ["Lịch sử và Địa lý", "Ngoại ngữ", "Ngoại ngữ", "Toán", "Khoa học tự nhiên", "HĐTN - HN"], "4": ["Lịch sử và Địa lý", "Lịch sử và Địa lý", "Ngữ văn", "Toán", "Nghệ thuật(Âm nhạc)", "Công nghệ"], "5": ["Tin học", "Giáo dục địa phương", "Ngữ văn", "Khoa học tự nhiên", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC6": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "GDCD", "HĐTN - HN"], "2": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Ngoại ngữ", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "3": ["Công nghệ", "Khoa học tự nhiên", "Giáo dục thể chất", "Lịch sử và Địa lý", "Ngữ văn", "Ngoại ngữ"], "4": ["Ngoại ngữ", "Khoa học tự nhiên", "Giáo dục thể chất", "Lịch sử và Địa lý", "Ngữ văn", "Toán"], "5": ["Nghệ thuật(Âm nhạc)", "Tin học", "Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục địa phương", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC7": {"morning": {"1": ["SH HĐTN HN.", "Giáo dục thể chất", "Ngoại ngữ", "HĐTN - HN", "Toán", "Công nghệ"], "2": ["SH HĐTN HN.", "Giáo dục thể chất", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)", "Toán", "Khoa học tự nhiên"], "3": ["Ngữ văn", "GDCD", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn", "Toán"], "4": ["Ngữ văn", "Tin học", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn", "Toán"], "5": ["Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Ngoại ngữ", "Giáo dục địa phương", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC8": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Giáo dục thể chất", "Toán", "Lịch sử và Địa lý", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Ngữ văn", "Giáo dục thể chất", "Toán", "Khoa học tự nhiên", "Ngoại ngữ"], "3": ["Tin học", "Lịch sử và Địa lý", "Ngữ văn", "GDCD", "Khoa học tự nhiên", "Khoa học tự nhiên"], "4": ["Công nghệ", "Ngoại ngữ", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Ngoại ngữ", "Khoa học tự nhiên"], "5": ["Toán", "Toán", "Giáo dục địa phương", "HĐTN - HN", "Nghệ thuật(Âm nhạc)", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC9": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Toán", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)"], "3": ["GDCD", "Khoa học tự nhiên", "HĐTN - HN", "Ngữ văn", "Công nghệ", "Ngữ văn"], "4": ["Tin học", "Nghệ thuật(Mĩ thuật)", "Ngoại ngữ", "Ngữ văn", "Lịch sử và Địa lý", "Ngữ văn"], "5": ["Giáo dục thể chất", "Giáo dục thể chất", "Lịch sử và Địa lý", "Giáo dục địa phương", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC10": {"morning": {"1": ["SH HĐTN HN.", "GDCD", "Lịch sử và Địa lý", "Ngữ văn", "Giáo dục thể chất", "Ngoại ngữ"], "2": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Ngữ văn", "Giáo dục thể chất", "Khoa học tự nhiên"], "3": ["Khoa học tự nhiên", "Toán", "Tin học", "Ngoại ngữ", "Khoa học tự nhiên", "Toán"], "4": ["Khoa học tự nhiên", "Toán", "Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý", "Toán"], "5": ["Ngữ văn", "Ngữ văn", "Công nghệ", "HĐTN - HN", "Giáo dục địa phương", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC11": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Ngoại ngữ", "Khoa học tự nhiên", "Ngữ văn", "Toán"], "2": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "GDCD", "Khoa học tự nhiên", "Ngữ văn", "Toán"], "3": ["Giáo dục thể chất", "Khoa học tự nhiên", "Toán", "Tin học", "Nghệ thuật(Mĩ thuật)", "Ngữ văn"], "4": ["Giáo dục thể chất", "Khoa học tự nhiên", "Toán", "Giáo dục địa phương", "HĐTN - HN", "Ngữ văn"], "5": ["Công nghệ", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Ngoại ngữ", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TC12": {"morning": {"1": ["SH HĐTN HN.", "Tin học", "Giáo dục địa phương", "Nghệ thuật(Âm nhạc)", "Ngoại ngữ", "GDCD"], "2": ["SH HĐTN HN.", "Công nghệ", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "3": ["Ngữ văn", "Giáo dục thể chất", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Toán", "Ngoại ngữ"], "4": ["Ngữ văn", "Giáo dục thể chất", "Khoa học tự nhiên", "Ngoại ngữ", "Toán", "Lịch sử và Địa lý"], "5": ["Toán", "Toán", "Ngữ văn", "Ngữ văn", "HĐTN - HN", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TH1": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên"], "3": ["Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Ngoại ngữ", "HĐTN - HN", "Lịch sử và Địa lý", "GDCD"], "4": ["GDCD", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Tin học"], "5": ["Ngoại ngữ", "Lịch sử và Địa lý", "Giáo dục địa phương", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "6TH2": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên", "Toán", "Tin học"], "2": ["SH HĐTN HN.", "GDCD", "Khoa học tự nhiên", "Ngoại ngữ", "Toán", "Công nghệ"], "3": ["Toán", "Giáo dục thể chất", "Ngữ văn", "Giáo dục địa phương", "HĐTN - HN", "Ngữ văn"], "4": ["Toán", "Giáo dục thể chất", "Ngữ văn", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "Ngữ văn"], "5": ["Nghệ thuật(Âm nhạc)", "Ngoại ngữ", "GDCD", "Ngoại ngữ", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+
+            // KHỐI 7
+            "7I1": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Toán", "Toán", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Công nghệ", "Toán", "Toán", "Ngữ văn", "Khoa học tự nhiên"], "3": ["Lịch sử và Địa lý", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)", "Giáo dục địa phương", "Ngữ văn", "Toán"], "4": ["Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Ngoại ngữ", "GDCD"], "5": ["Tin học", "Ngữ văn", "Ngữ văn", "Ngoại ngữ", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7I2": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Khoa học tự nhiên", "Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Ngữ văn", "Khoa học tự nhiên", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Lịch sử và Địa lý"], "3": ["Công nghệ", "GDCD", "Toán", "Ngoại ngữ", "Giáo dục thể chất", "Ngữ văn"], "4": ["Ngoại ngữ", "Ngoại ngữ", "Toán", "Tin học", "Giáo dục thể chất", "Ngữ văn"], "5": ["Nghệ thuật(Âm nhạc)", "Toán", "Giáo dục địa phương", "Ngữ văn", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC1": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Giáo dục thể chất", "Ngoại ngữ", "Khoa học tự nhiên", "Ngữ văn"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "GDCD", "Ngữ văn"], "3": ["Ngữ văn", "Công nghệ", "Lịch sử và Địa lý", "Toán", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)"], "4": ["Ngữ văn", "Lịch sử và Địa lý", "Tin học", "Giáo dục địa phương", "Toán", "Ngoại ngữ"], "5": ["Nghệ thuật(Âm nhạc)", "Toán", "Ngoại ngữ", "Khoa học tự nhiên", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC2": {"morning": {"1": ["SH HĐTN HN.", "Tin học", "Ngữ văn", "Lịch sử và Địa lý", "Toán", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Ngoại ngữ", "Ngữ văn", "Lịch sử và Địa lý", "Toán", "Khoa học tự nhiên"], "3": ["Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Ngoại ngữ", "Ngữ văn", "Giáo dục thể chất"], "4": ["Khoa học tự nhiên", "Giáo dục địa phương", "Ngoại ngữ", "Toán", "Ngữ văn", "Giáo dục thể chất"], "5": ["Nghệ thuật(Âm nhạc)", "Công nghệ", "GDCD", "Toán", "Khoa học tự nhiên", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC3": {"morning": {"1": ["SH HĐTN HN.", "GDCD", "Toán", "Ngữ văn", "Khoa học tự nhiên", "Giáo dục thể chất"], "2": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "Toán", "Ngữ văn", "Khoa học tự nhiên", "Giáo dục thể chất"], "3": ["Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên", "Toán", "Ngoại ngữ"], "4": ["Ngữ văn", "Lịch sử và Địa lý", "Ngoại ngữ", "Tin học", "Toán", "Công nghệ"], "5": ["Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Giáo dục địa phương", "Lịch sử và Địa lý", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC4": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Ngoại ngữ", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Toán", "Công nghệ", "Khoa học tự nhiên", "Khoa học tự nhiên", "Lịch sử và Địa lý"], "3": ["Giáo dục thể chất", "Ngoại ngữ", "Ngữ văn", "GDCD", "Ngữ văn", "Toán"], "4": ["Giáo dục thể chất", "Tin học", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Toán"], "5": ["Khoa học tự nhiên", "Lịch sử và Địa lý", "Giáo dục địa phương", "Ngữ văn", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC5": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "Giáo dục thể chất", "Ngoại ngữ", "Toán"], "2": ["SH HĐTN HN.", "GDCD", "Khoa học tự nhiên", "Giáo dục thể chất", "Khoa học tự nhiên", "Toán"], "3": ["Ngoại ngữ", "Toán", "Khoa học tự nhiên", "Ngữ văn", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý"], "4": ["Công nghệ", "Toán", "Giáo dục địa phương", "Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "5": ["Ngữ văn", "Ngữ văn", "Tin học", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TC6": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý", "Ngữ văn", "Giáo dục thể chất", "Toán"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Ngữ văn", "Giáo dục thể chất", "Toán"], "3": ["Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Lịch sử và Địa lý", "Tin học", "GDCD"], "4": ["Toán", "Ngữ văn", "Giáo dục địa phương", "Ngoại ngữ", "Nghệ thuật(Mĩ thuật)", "Ngoại ngữ"], "5": ["Khoa học tự nhiên", "Ngữ văn", "Khoa học tự nhiên", "Công nghệ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TH1": {"morning": {"1": ["SH HĐTN HN.", "Giáo dục thể chất", "Khoa học tự nhiên", "Toán", "Ngoại ngữ", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Giáo dục thể chất", "Khoa học tự nhiên", "Toán", "GDCD", "Khoa học tự nhiên"], "3": ["Nghệ thuật(Âm nhạc)", "Ngữ văn", "Ngữ văn", "Tin học", "Lịch sử và Địa lý", "Ngoại ngữ"], "4": ["Lịch sử và Địa lý", "Ngữ văn", "Ngữ văn", "Giáo dục địa phương", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)"], "5": ["Toán", "Toán", "Công nghệ", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TH2": {"morning": {"1": ["SH HĐTN HN.", "Toán", "GDCD", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Ngoại ngữ"], "2": ["SH HĐTN HN.", "Toán", "Tin học", "Ngoại ngữ", "Ngữ văn", "Nghệ thuật(Âm nhạc)"], "3": ["Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn"], "4": ["Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn"], "5": ["Lịch sử và Địa lý", "Ngoại ngữ", "Ngữ văn", "Giáo dục địa phương", "Công nghệ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "7TH3": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Giáo dục địa phương", "Ngữ văn", "Toán", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Ngoại ngữ", "Ngữ văn", "Toán", "GDCD"], "3": ["Lịch sử và Địa lý", "Toán", "Giáo dục thể chất", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Ngữ văn"], "4": ["Lịch sử và Địa lý", "Toán", "Giáo dục thể chất", "Nghệ thuật(Âm nhạc)", "Khoa học tự nhiên", "Ngữ văn"], "5": ["Ngoại ngữ", "Ngoại ngữ", "Công nghệ", "Tin học", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+
+            // KHỐI 8
+            "8I1": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Lịch sử và Địa lý", "GDCD", "Toán", "Nghệ thuật(Mĩ thuật)"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Ngoại ngữ", "Ngữ văn", "Toán", "Nghệ thuật(Âm nhạc)"], "3": ["Toán", "Giáo dục địa phương", "Ngữ văn", "Ngữ văn", "Giáo dục thể chất", "Lịch sử và Địa lý"], "4": ["Toán", "Ngữ văn", "Ngữ văn", "Tin học", "Giáo dục thể chất", "Ngoại ngữ"], "5": ["Ngoại ngữ", "Ngữ văn", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Công nghệ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8I2": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Ngữ văn", "GDCD"], "2": ["SH HĐTN HN.", "Ngữ văn", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Ngữ văn", "Toán"], "3": ["Lịch sử và Địa lý", "Ngữ văn", "Công nghệ", "Khoa học tự nhiên", "Ngoại ngữ", "Toán"], "4": ["Lịch sử và Địa lý", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục thể chất", "Khoa học tự nhiên"], "5": ["Tin học", "Toán", "Giáo dục địa phương", "Lịch sử và Địa lý", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC1": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Toán", "Toán", "Lịch sử và Địa lý", "Nghệ thuật(Âm nhạc)"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Toán", "Toán", "Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)"], "3": ["GDCD", "Ngữ văn", "HĐTN - HN", "Tin học", "Công nghệ", "Ngữ văn"], "4": ["Khoa học tự nhiên", "Ngữ văn", "Ngoại ngữ", "Lịch sử và Địa lý", "Giáo dục thể chất", "Ngữ văn"], "5": ["Khoa học tự nhiên", "Giáo dục địa phương", "Ngoại ngữ", "Lịch sử và Địa lý", "Giáo dục thể chất", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC2": {"morning": {"1": ["SH HĐTN HN.", "Giáo dục thể chất", "Tin học", "Toán", "GDCD", "Toán"], "2": ["SH HĐTN HN.", "Giáo dục thể chất", "Khoa học tự nhiên", "Toán", "Ngoại ngữ", "Toán"], "3": ["Công nghệ", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Ngữ văn", "Nghệ thuật(Mĩ thuật)"], "4": ["Khoa học tự nhiên", "Lịch sử và Địa lý", "Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Khoa học tự nhiên"], "5": ["Ngoại ngữ", "Ngữ văn", "Giáo dục địa phương", "Ngữ văn", "HĐTN - HN", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC3": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Ngữ văn", "Giáo dục thể chất"], "2": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "GDCD", "Khoa học tự nhiên", "Ngữ văn", "Giáo dục thể chất"], "3": ["Ngữ văn", "Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục địa phương", "Khoa học tự nhiên", "Toán"], "4": ["Ngữ văn", "Khoa học tự nhiên", "Lịch sử và Địa lý", "HĐTN - HN", "Công nghệ", "Toán"], "5": ["Toán", "Toán", "Tin học", "Ngoại ngữ", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC4": {"morning": {"1": ["SH HĐTN HN.", "Toán", "GDCD", "Khoa học tự nhiên", "Giáo dục thể chất", "Ngoại ngữ"], "2": ["SH HĐTN HN.", "Toán", "Khoa học tự nhiên", "Tin học", "Giáo dục thể chất", "Công nghệ"], "3": ["Lịch sử và Địa lý", "Ngữ văn", "Ngữ văn", "Nghệ thuật(Mĩ thuật)", "Toán", "Khoa học tự nhiên"], "4": ["Lịch sử và Địa lý", "Ngữ văn", "Ngữ văn", "Nghệ thuật(Âm nhạc)", "Toán", "Khoa học tự nhiên"], "5": ["Ngoại ngữ", "Lịch sử và Địa lý", "HĐTN - HN", "Giáo dục địa phương", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC5": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên", "Ngữ văn"], "2": ["SH HĐTN HN.", "Tin học", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên", "Ngữ văn"], "3": ["Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục địa phương", "Công nghệ", "Lịch sử và Địa lý", "Nghệ thuật(Âm nhạc)"], "4": ["Khoa học tự nhiên", "GDCD", "Ngoại ngữ", "Ngữ văn", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)"], "5": ["Ngữ văn", "HĐTN - HN", "Toán", "Ngữ văn", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC6": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Ngữ văn", "GDCD", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý", "Lịch sử và Địa lý"], "3": ["Ngoại ngữ", "Toán", "Tin học", "Giáo dục thể chất", "Ngữ văn", "Khoa học tự nhiên"], "4": ["Công nghệ", "Toán", "HĐTN - HN", "Giáo dục thể chất", "Ngữ văn", "Khoa học tự nhiên"], "5": ["Lịch sử và Địa lý", "Giáo dục địa phương", "Ngoại ngữ", "Toán", "Toán", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TC7": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "Công nghệ", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "GDCD", "Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên"], "3": ["Giáo dục thể chất", "Lịch sử và Địa lý", "Ngữ văn", "Toán", "Nghệ thuật(Mĩ thuật)", "Ngữ văn"], "4": ["Giáo dục thể chất", "Ngoại ngữ", "Giáo dục địa phương", "Toán", "Ngoại ngữ", "Ngữ văn"], "5": ["Toán", "Toán", "Tin học", "HĐTN - HN", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TH1": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "Toán"], "2": ["SH HĐTN HN.", "Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Toán"], "3": ["Khoa học tự nhiên", "GDCD", "Toán", "Ngữ văn", "Khoa học tự nhiên", "Giáo dục thể chất"], "4": ["Khoa học tự nhiên", "Lịch sử và Địa lý", "Toán", "Ngữ văn", "Lịch sử và Địa lý", "Giáo dục thể chất"], "5": ["Ngữ văn", "Ngoại ngữ", "Giáo dục địa phương", "Công nghệ", "Tin học", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "8TH2": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Giáo dục địa phương", "Giáo dục thể chất", "Ngoại ngữ", "Toán"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "GDCD", "Giáo dục thể chất", "Công nghệ", "Toán"], "3": ["Toán", "Ngoại ngữ", "Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Tin học"], "4": ["Toán", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Lịch sử và Địa lý"], "5": ["Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Toán", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+
+            // KHỐI 9
+            "9A1": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Toán", "Khoa học tự nhiên", "HĐTN - HN", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Ngữ văn", "Toán", "Ngoại ngữ", "GDCD", "Khoa học tự nhiên"], "3": ["Khoa học tự nhiên", "Ngữ văn", "Khoa học tự nhiên", "Toán", "Lịch sử và Địa lý", "Giáo dục thể chất"], "4": ["Giáo dục địa phương", "Tin học", "Lịch sử và Địa lý", "Toán", "Lịch sử và Địa lý", "Giáo dục thể chất"], "5": ["Ngữ văn", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "Nghệ thuật(Âm nhạc)", "Công nghệ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9A2": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Tin học", "Ngữ văn", "Toán", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "Ngữ văn", "GDCD", "Ngữ văn", "Toán", "Lịch sử và Địa lý"], "3": ["Lịch sử và Địa lý", "Ngoại ngữ", "Giáo dục thể chất", "Nghệ thuật(Âm nhạc)", "Ngoại ngữ", "Khoa học tự nhiên"], "4": ["Lịch sử và Địa lý", "Giáo dục địa phương", "Giáo dục thể chất", "Nghệ thuật(Mĩ thuật)", "HĐTN - HN", "Khoa học tự nhiên"], "5": ["Toán", "Khoa học tự nhiên", "Toán", "Công nghệ", "Khoa học tự nhiên", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9I1": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Ngoại ngữ", "Ngữ văn", "Nghệ thuật(Âm nhạc)"], "2": ["SH HĐTN HN.", "Toán", "Ngữ văn", "Công nghệ", "Ngữ văn", "Nghệ thuật(Mĩ thuật)"], "3": ["GDCD", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "HĐTN - HN"], "4": ["Khoa học tự nhiên", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Giáo dục thể chất", "Toán", "Lịch sử và Địa lý"], "5": ["Khoa học tự nhiên", "Tin học", "Ngoại ngữ", "Giáo dục địa phương", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9I2": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "GDCD", "Nghệ thuật(Âm nhạc)", "Toán", "Giáo dục địa phương"], "2": ["SH HĐTN HN.", "Ngoại ngữ", "HĐTN - HN", "Nghệ thuật(Mĩ thuật)", "Toán", "Lịch sử và Địa lý"], "3": ["Tin học", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục thể chất", "Ngữ văn"], "4": ["Công nghệ", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục thể chất", "Ngữ văn"], "5": ["Lịch sử và Địa lý", "Lịch sử và Địa lý", "Ngữ văn", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9I3": {"morning": {"1": ["SH HĐTN HN.", "Giáo dục thể chất", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý", "Tin học", "Ngữ văn"], "2": ["SH HĐTN HN.", "Giáo dục thể chất", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Ngoại ngữ", "Ngữ văn"], "3": ["Ngoại ngữ", "Ngữ văn", "Giáo dục địa phương", "HĐTN - HN", "Lịch sử và Địa lý", "Toán"], "4": ["GDCD", "Ngữ văn", "Toán", "Công nghệ", "Lịch sử và Địa lý", "Toán"], "5": ["Khoa học tự nhiên", "Khoa học tự nhiên", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC1": {"morning": {"1": ["SH HĐTN HN.", "GDCD", "Giáo dục thể chất", "Toán", "Khoa học tự nhiên", "Lịch sử và Địa lý"], "2": ["SH HĐTN HN.", "HĐTN - HN", "Giáo dục thể chất", "Toán", "Khoa học tự nhiên", "Lịch sử và Địa lý"], "3": ["Giáo dục địa phương", "Toán", "Ngoại ngữ", "Nghệ thuật(Âm nhạc)", "Ngữ văn", "Công nghệ"], "4": ["Ngoại ngữ", "Toán", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Tin học"], "5": ["Ngữ văn", "Ngữ văn", "Khoa học tự nhiên", "Khoa học tự nhiên", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC2": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Giáo dục thể chất", "Ngoại ngữ", "Tin học"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Giáo dục thể chất", "GDCD", "HĐTN - HN"], "3": ["Toán", "Nghệ thuật(Âm nhạc)", "Công nghệ", "Toán", "Ngữ văn", "Giáo dục địa phương"], "4": ["Toán", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Toán", "Ngữ văn", "Ngoại ngữ"], "5": ["Lịch sử và Địa lý", "Ngữ văn", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC3": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "Ngoại ngữ", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "HĐTN - HN"], "2": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "GDCD", "Lịch sử và Địa lý", "Tin học", "Giáo dục thể chất"], "3": ["Lịch sử và Địa lý", "Khoa học tự nhiên", "Giáo dục địa phương", "Ngữ văn", "Toán", "Giáo dục thể chất"], "4": ["Ngoại ngữ", "Khoa học tự nhiên", "Công nghệ", "Ngữ văn", "Toán", "Ngữ văn"], "5": ["Toán", "Toán", "Khoa học tự nhiên", "Khoa học tự nhiên", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC4": {"morning": {"1": ["SH HĐTN HN.", "Tin học", "Toán", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)", "Ngữ văn"], "2": ["SH HĐTN HN.", "Công nghệ", "Toán", "Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)", "Ngữ văn"], "3": ["HĐTN - HN", "Giáo dục thể chất", "Lịch sử và Địa lý", "Ngoại ngữ", "GDCD", "Khoa học tự nhiên"], "4": ["Lịch sử và Địa lý", "Giáo dục thể chất", "Lịch sử và Địa lý", "Giáo dục địa phương", "Khoa học tự nhiên", "Khoa học tự nhiên"], "5": ["Ngoại ngữ", "Lịch sử và Địa lý", "Ngữ văn", "Toán", "Toán", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC5": {"morning": {"1": ["SH HĐTN HN.", "Lịch sử và Địa lý", "HĐTN - HN", "Ngoại ngữ", "Toán", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "GDCD", "Công nghệ", "Giáo dục địa phương", "Toán", "Khoa học tự nhiên"], "3": ["Ngữ văn", "Ngữ văn", "Tin học", "Giáo dục thể chất", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý"], "4": ["Ngữ văn", "Ngữ văn", "Ngoại ngữ", "Giáo dục thể chất", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý"], "5": ["Khoa học tự nhiên", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Toán", "Toán", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC6": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "GDCD", "Ngữ văn", "Giáo dục thể chất", "Toán"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Tin học", "Ngữ văn", "Giáo dục thể chất", "Toán"], "3": ["Toán", "Lịch sử và Địa lý", "Nghệ thuật(Âm nhạc)", "Công nghệ", "Khoa học tự nhiên", "Giáo dục địa phương"], "4": ["Toán", "Lịch sử và Địa lý", "Nghệ thuật(Mĩ thuật)", "HĐTN - HN", "Khoa học tự nhiên", "Ngoại ngữ"], "5": ["Ngoại ngữ", "Ngoại ngữ", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC7": {"morning": {"1": ["SH HĐTN HN.", "HĐTN - HN", "Lịch sử và Địa lý", "Tin học", "Ngoại ngữ", "Toán"], "2": ["SH HĐTN HN.", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Công nghệ", "GDCD", "Toán"], "3": ["Khoa học tự nhiên", "Giáo dục địa phương", "Ngữ văn", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên"], "4": ["Khoa học tự nhiên", "Ngoại ngữ", "Ngữ văn", "Toán", "Giáo dục thể chất", "Khoa học tự nhiên"], "5": ["Nghệ thuật(Âm nhạc)", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "Ngữ văn", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC8": {"morning": {"1": ["SH HĐTN HN.", "Toán", "Khoa học tự nhiên", "Giáo dục địa phương", "Ngữ văn", "Giáo dục thể chất"], "2": ["SH HĐTN HN.", "Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Ngữ văn", "Giáo dục thể chất"], "3": ["Ngữ văn", "Nghệ thuật(Mĩ thuật)", "HĐTN - HN", "Lịch sử và Địa lý", "Tin học", "Toán"], "4": ["Ngữ văn", "Nghệ thuật(Âm nhạc)", "GDCD", "Lịch sử và Địa lý", "Công nghệ", "Toán"], "5": ["Lịch sử và Địa lý", "Lịch sử và Địa lý", "Khoa học tự nhiên", "Khoa học tự nhiên", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC9": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Giáo dục thể chất", "GDCD", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "2": ["SH HĐTN HN.", "Ngữ văn", "Giáo dục thể chất", "HĐTN - HN", "Lịch sử và Địa lý", "Khoa học tự nhiên"], "3": ["Toán", "Lịch sử và Địa lý", "Toán", "Nghệ thuật(Mĩ thuật)", "Công nghệ", "Ngoại ngữ"], "4": ["Toán", "Lịch sử và Địa lý", "Toán", "Nghệ thuật(Âm nhạc)", "Tin học", "Giáo dục địa phương"], "5": ["Khoa học tự nhiên", "Khoa học tự nhiên", "Ngữ văn", "Ngoại ngữ", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC10": {"morning": {"1": ["SH HĐTN HN.", "Ngoại ngữ", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục thể chất", "GDCD"], "2": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "Khoa học tự nhiên", "Khoa học tự nhiên", "Giáo dục thể chất", "HĐTN - HN"], "3": ["Nghệ thuật(Mĩ thuật)", "Ngữ văn", "Lịch sử và Địa lý", "Lịch sử và Địa lý", "Công nghệ", "Toán"], "4": ["Lịch sử và Địa lý", "Ngữ văn", "Lịch sử và Địa lý", "Tin học", "Ngoại ngữ", "Toán"], "5": ["Toán", "Toán", "Giáo dục địa phương", "Ngữ văn", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TC11": {"morning": {"1": ["SH HĐTN HN.", "Khoa học tự nhiên", "Toán", "Nghệ thuật(Mĩ thuật)", "Lịch sử và Địa lý", "GDCD"], "2": ["SH HĐTN HN.", "Khoa học tự nhiên", "Toán", "Nghệ thuật(Âm nhạc)", "Lịch sử và Địa lý", "Giáo dục địa phương"], "3": ["Lịch sử và Địa lý", "Tin học", "Ngữ văn", "Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục thể chất"], "4": ["Lịch sử và Địa lý", "Công nghệ", "Ngữ văn", "Khoa học tự nhiên", "HĐTN - HN", "Giáo dục thể chất"], "5": ["Toán", "Toán", "Ngoại ngữ", "Ngữ văn", "Ngữ văn", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TH1": {"morning": {"1": ["SH HĐTN HN.", "Ngữ văn", "Ngoại ngữ", "Công nghệ", "Khoa học tự nhiên", "Nghệ thuật(Mĩ thuật)"], "2": ["SH HĐTN HN.", "Ngữ văn", "HĐTN - HN", "GDCD", "Khoa học tự nhiên", "Nghệ thuật(Âm nhạc)"], "3": ["Giáo dục thể chất", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Toán", "Ngữ văn", "Lịch sử và Địa lý"], "4": ["Giáo dục thể chất", "Khoa học tự nhiên", "Lịch sử và Địa lý", "Toán", "Ngữ văn", "Lịch sử và Địa lý"], "5": ["Toán", "Toán", "Giáo dục địa phương", "Tin học", "Ngoại ngữ", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}},
+            "9TH2": {"morning": {"1": ["SH HĐTN HN.", "Nghệ thuật(Mĩ thuật)", "Khoa học tự nhiên", "Toán", "GDCD", "Ngữ văn"], "2": ["SH HĐTN HN.", "Nghệ thuật(Âm nhạc)", "Khoa học tự nhiên", "Toán", "HĐTN - HN", "Ngữ văn"], "3": ["Lịch sử và Địa lý", "Lịch sử và Địa lý", "Toán", "Khoa học tự nhiên", "Ngoại ngữ", "Giáo dục thể chất"], "4": ["Lịch sử và Địa lý", "Tin học", "Toán", "Khoa học tự nhiên", "Giáo dục địa phương", "Giáo dục thể chất"], "5": ["Công nghệ", "Ngoại ngữ", "Ngữ văn", "Ngữ văn", "Lịch sử và Địa lý", "--"]}, "afternoon": {"1": ["--", "--", "--", "--", "--", "--"], "2": ["--", "--", "--", "--", "--", "--"], "3": ["--", "--", "--", "--", "--", "--"], "4": ["--", "--", "--", "--", "--", "--"], "5": ["--", "--", "--", "--", "--", "--"]}}
+        };
+
+        // NGHÌN SẮC CÁC MÔN HỌC
+        const SUBJECT_COLORS = {
+            "Toán": "text-sky-500 font-bold",
+            "Ngữ văn": "text-rose-500 font-semibold",
+            "Ngoại ngữ": "text-amber-500 font-semibold",
+            "Khoa học tự nhiên": "text-teal-500 font-semibold",
+            "Lịch sử và Địa lý": "text-yellow-600 dark:text-yellow-500",
+            "GDCD": "text-red-500 font-semibold",
+            "Tin học": "text-indigo-500 font-semibold",
+            "Công nghệ": "text-blue-500",
+            "Giáo dục thể chất": "text-orange-500 font-semibold",
+            "Giáo dục địa phương": "text-pink-500",
+            "SH HĐTN HN.": "text-emerald-600 dark:text-emerald-400 font-bold",
+            "HĐTN - HN": "text-emerald-600 dark:text-emerald-400 font-semibold",
+            "Nghệ thuật(Âm nhạc)": "text-cyan-500",
+            "Nghệ thuật(Mĩ thuật)": "text-purple-500"
+        };
+
+        let booksData = [...INITIAL_LOCAL_BOOKS];
+        let currentSubject = 'Tất cả';
+        let currentGrade = '8';
+        let currentSearchQuery = '';
+        let activeTab = 'books';
+        let currentSelectedClass = '8TC1';
+        let favoriteBookIds = new Set(JSON.parse(localStorage.getItem('onlearn_favs') || '[]'));
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedTheme();
+            renderSidebarSubjects();
+            renderBooks();
+            updateBadges();
+            initScheduleSelects();
+        });
+
+        function toggleDarkMode() {
+            const htmlEl = document.documentElement;
+            const isDark = htmlEl.classList.toggle('dark');
+            localStorage.setItem('onlearn_theme', isDark ? 'dark' : 'light');
+            updateThemeBtnText(isDark);
+        }
+
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('onlearn_theme');
+            const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            updateThemeBtnText(isDark);
+        }
+
+        function updateThemeBtnText(isDark) {
+            const btnText = document.getElementById('themeBtnText');
+            if (btnText) btnText.textContent = isDark ? 'Tối (Ocean)' : 'Sáng (Fresh)';
+        }
+
+        function renderSidebarSubjects() {
+            const container = document.getElementById('sidebarSubjects');
+            container.innerHTML = SUBJECTS.map(subj => {
+                const isActive = subj === currentSubject;
+                return `
+                    <button onclick="setSubjectFilter('${subj}')" 
+                            class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                isActive 
+                                ? 'bg-sky-500/15 text-sky-600 dark:text-sky-400 border border-sky-500/30' 
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
+                            }">
+                        <span>${subj}</span>
+                        ${isActive ? '<i class="fa-solid fa-chevron-right text-[10px]"></i>' : ''}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setSubjectFilter(subj) {
+            currentSubject = subj;
+            renderSidebarSubjects();
+            renderBooks();
+            if (activeTab !== 'books' && activeTab !== 'favs') {
+                switchMainTab('books');
+            }
+        }
+
+        function handleGradeChange() {
+            currentGrade = document.getElementById('gradeSelect').value;
+            renderBooks();
+            
+            // Đồng bộ với dropdown khối ở phần TKB
+            if (currentGrade !== 'ALL') {
+                document.getElementById('scheduleGradeSelect').value = currentGrade;
+                handleScheduleGradeChange();
+            }
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            currentSearchQuery = query;
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (query.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+            renderBooks();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            handleSearch();
+        }
+
+        function resetFilters() {
+            currentSubject = 'Tất cả';
+            currentGrade = 'ALL';
+            document.getElementById('gradeSelect').value = 'ALL';
+            document.getElementById('searchInput').value = '';
+            currentSearchQuery = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderSidebarSubjects();
+            renderBooks();
+        }
+
+        /* HÀM RENDER CÁC THẺ SÁCH */
+        function renderBooks() {
+            const grid = document.getElementById('booksGrid');
+            const noResults = document.getElementById('noResultsState');
+            const sectionTitle = document.getElementById('sectionTitle');
+            const activeBadge = document.getElementById('activeFilterBadge');
+
+            let filtered = booksData.filter(book => {
+                if (currentGrade !== 'ALL' && book.grade !== currentGrade) return false;
+                if (currentSubject !== 'Tất cả' && book.subject !== currentSubject) return false;
+                if (activeTab === 'favs' && !favoriteBookIds.has(book.id)) return false;
+
+                if (currentSearchQuery) {
+                    const searchContent = `${book.title} ${book.subject} ${book.series} ${book.desc}`.toLowerCase();
+                    if (!searchContent.includes(currentSearchQuery)) return false;
+                }
+                return true;
+            });
+
+            if (activeTab === 'favs') {
+                sectionTitle.innerHTML = `<i class="fa-solid fa-bookmark text-amber-500"></i> Danh Sách Sách Yêu Thích`;
+                activeBadge.textContent = `Đã lưu ${filtered.length} cuốn`;
+            } else {
+                sectionTitle.innerHTML = `<i class="fa-solid fa-book-bookmark text-sky-500"></i> Danh Sách Sách SGK & Tài Liệu`;
+                activeBadge.textContent = `Lọc: ${currentSubject} (${filtered.length} tài liệu)`;
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(book => {
+                const isFav = favoriteBookIds.has(book.id);
+                return `
+                    <div class="glass-card rounded-2xl border border-slate-200/80 dark:border-sky-900/30 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+                        
+                        <div class="h-36 bg-gradient-to-br ${book.gradient} p-4 flex flex-col justify-between relative overflow-hidden">
+                            <img src="${book.picUrl}" 
+                                 alt="${book.title}" 
+                                 class="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition-transform duration-500" 
+                                 onerror="this.style.display='none'">
+
+                            <div class="absolute -right-4 -bottom-4 text-white/10 text-8xl font-black select-none pointer-events-none">
+                                L${book.grade}
+                            </div>
+                            
+                            <div class="flex items-center justify-between relative z-10">
+                                <span class="px-2.5 py-1 rounded-lg bg-black/30 backdrop-blur-md text-white text-[11px] font-bold">
+                                    Môn ${book.subject}
+                                </span>
+                                <button onclick="toggleFavorite('${book.id}')" 
+                                        class="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md text-white hover:bg-white/40 flex items-center justify-center transition-all"
+                                        title="${isFav ? 'Bỏ yêu thích' : 'Lưu yêu thích'}">
+                                    <i class="${isFav ? 'fa-solid text-amber-300' : 'fa-regular'} fa-bookmark text-sm"></i>
+                                </button>
+                            </div>
+
+                            <div class="relative z-10 text-white flex items-center gap-2">
+                                <i class="fa-solid ${book.icon || 'fa-book'} text-xl"></i>
+                                <span class="text-xs font-semibold text-white/90 truncate">${book.series} - Lớp ${book.grade}</span>
+                            </div>
+                        </div>
+
+                        <div class="p-4 flex-grow flex flex-col justify-between space-y-3">
+                            <div>
+                                <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm group-hover:text-sky-500 transition-colors line-clamp-1">
+                                    ${book.title}
+                                </h4>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                                    ${book.desc}
+                                </p>
+                            </div>
+
+                            <div class="pt-3 border-t border-slate-200/60 dark:border-slate-800 flex items-center gap-2">
+                                <button onclick="openPdfReader('${book.title}', '${book.subject}', '${book.pdfUrl}')" 
+                                        class="flex-1 py-2 px-3 rounded-xl bg-sky-500/10 hover:bg-sky-500 text-sky-600 dark:text-sky-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-all">
+                                    <i class="fa-solid fa-eye"></i> Đọc ngay
+                                </button>
+
+                                <a href="${book.pdfUrl}" target="_blank" download 
+                                   class="p-2 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all text-xs" 
+                                   title="Mở file trong tab mới">
+                                    <i class="fa-solid fa-download"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleFavorite(id) {
+            if (favoriteBookIds.has(id)) favoriteBookIds.delete(id);
+            else favoriteBookIds.add(id);
+            localStorage.setItem('onlearn_favs', JSON.stringify([...favoriteBookIds]));
+            updateBadges();
+            renderBooks();
+        }
+
+        function updateBadges() {
+            document.getElementById('navBookBadge').textContent = booksData.length;
+            document.getElementById('navFavBadge').textContent = favoriteBookIds.size;
+        }
+
+        function switchMainTab(tab) {
+            activeTab = tab;
+            const booksSection = document.getElementById('booksSection');
+            const scheduleSection = document.getElementById('scheduleSection');
+            const heroBanner = document.getElementById('heroBanner');
+            const subjectFilterContainer = document.getElementById('subjectFilterContainer');
+            const pageMainTitle = document.getElementById('pageMainTitle');
+
+            const navBooks = document.getElementById('navBooks');
+            const navFavs = document.getElementById('navFavs');
+            const navSchedule = document.getElementById('navSchedule');
+
+            [navBooks, navFavs, navSchedule].forEach(btn => {
+                btn.className = "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60";
+            });
+
+            if (tab === 'schedule') {
+                booksSection.classList.add('hidden');
+                heroBanner.classList.add('hidden');
+                subjectFilterContainer.classList.add('hidden');
+                scheduleSection.classList.remove('hidden');
+                pageMainTitle.textContent = "Thời Khóa Biểu Toàn Trường";
+                navSchedule.className = "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sky-500 text-white shadow-md shadow-sky-500/20";
+                renderClassSchedule();
+            } else {
+                booksSection.classList.remove('hidden');
+                heroBanner.classList.remove('hidden');
+                subjectFilterContainer.classList.remove('hidden');
+                scheduleSection.classList.add('hidden');
+                pageMainTitle.textContent = "Kho Sách Giáo Khoa PDF";
+                if (tab === 'books') {
+                    navBooks.className = "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-sky-500 text-white shadow-md shadow-sky-500/20";
+                } else if (tab === 'favs') {
+                    navFavs.className = "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-all bg-amber-500 text-white shadow-md shadow-amber-500/20";
+                }
+                renderBooks();
+            }
+        }
+
+        /* KHỞI TẠO VÀ LỌC CÁC LỚP THỜI KHÓA BIỂU */
+        function initScheduleSelects() {
+            handleScheduleGradeChange();
+        }
+
+        function handleScheduleGradeChange() {
+            const selectedGrade = document.getElementById('scheduleGradeSelect').value;
+            const classSelect = document.getElementById('classSelect');
+            
+            // Lấy tất cả lớp thuộc Khối được chọn
+            const availableClasses = Object.keys(ALL_SCHEDULES)
+                .filter(c => c.startsWith(selectedGrade))
+                .sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
+
+            classSelect.innerHTML = availableClasses.map(c => 
+                `<option value="${c}">${c}</option>`
+            ).join('');
+
+            if (availableClasses.length > 0) {
+                currentSelectedClass = availableClasses[0];
+                classSelect.value = currentSelectedClass;
+            }
+
+            renderClassSchedule();
+        }
+
+        function handleClassChange() {
+            currentSelectedClass = document.getElementById('classSelect').value;
+            renderClassSchedule();
+        }
+
+        /* RENDER THỜI KHÓA BIỂU CỦA LỚP ĐƯỢC CHỌN */
+        function renderClassSchedule() {
+            const schedData = ALL_SCHEDULES[currentSelectedClass];
+            const container = document.getElementById('scheduleTablesContainer');
+            const titleEl = document.getElementById('scheduleTitle');
+
+            if (!schedData) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500">Chưa có dữ liệu thời khóa biểu cho lớp này</div>`;
+                return;
+            }
+
+            titleEl.innerHTML = `<i class="fa-solid fa-calendar-week text-sky-500"></i> THỜI KHÓA BIỂU LỚP ${currentSelectedClass}`;
+
+            const renderTableSession = (sessionKey, sessionTitle, iconClass, iconColor, badgeColor) => {
+                const sessionData = schedData[sessionKey] || {};
+                const periods = ['1', '2', '3', '4', '5'];
+                
+                return `
+                    <div class="glass-card rounded-2xl p-5 overflow-hidden flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
+                                <h4 class="font-bold text-base text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <i class="fa-solid ${iconClass} ${iconColor} text-lg"></i> ${sessionTitle}
+                                </h4>
+                                <span class="text-[11px] font-semibold px-2.5 py-0.5 rounded-lg ${badgeColor}">
+                                    Tiết 1 - 5
+                                </span>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-xs text-left text-slate-600 dark:text-slate-300">
+                                    <thead class="uppercase bg-slate-100 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 font-bold">
+                                        <tr>
+                                            <th class="py-2.5 px-2 rounded-l-xl text-center w-10">Tiết</th>
+                                            <th class="py-2.5 px-2">Thứ 2</th>
+                                            <th class="py-2.5 px-2">Thứ 3</th>
+                                            <th class="py-2.5 px-2">Thứ 4</th>
+                                            <th class="py-2.5 px-2">Thứ 5</th>
+                                            <th class="py-2.5 px-2">Thứ 6</th>
+                                            <th class="py-2.5 px-2 rounded-r-xl">Thứ 7</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-200/60 dark:divide-slate-800/60 font-medium">
+                                        ${periods.map(period => {
+                                            const days = sessionData[period] || ['--', '--', '--', '--', '--', '--'];
+                                            return `
+                                                <tr class="hover:bg-sky-500/5 transition-colors">
+                                                    <td class="py-3 px-2 font-bold text-sky-500 text-center bg-slate-50/50 dark:bg-slate-900/30">${period}</td>${days.map(subject => {
+                                                        const colorClass = SUBJECT_COLORS[subject] || (subject === '--' ? 'text-slate-400 italic' : '');
+                                                        return `<td class="py-3 px-2 ${colorClass}">${subject}</td>`;
+                                                    }).join('')}
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                ${renderTableSession('morning', 'BUỔI SÁNG', 'fa-sun', 'text-amber-400', 'bg-amber-500/10 text-amber-500 border border-amber-500/20')}
+                ${renderTableSession('afternoon', 'BUỔI CHIỀU', 'fa-moon', 'text-indigo-400', 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20')}
+            `;
+        }
+
+        function openPdfReader(title, subject, pdfUrl) {
+            document.getElementById('modalPdfTitle').textContent = title;
+            document.getElementById('modalSubjectBadge').textContent = subject;
+            const iframe = document.getElementById('pdfIframe');
+            document.getElementById('modalDownloadBtn').href = pdfUrl;
+            iframe.src = pdfUrl;
+            openModal('pdfModal');
+        }
+
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
